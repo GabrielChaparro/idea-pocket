@@ -42,6 +42,13 @@ class _ItemEditorSheetState extends State<ItemEditorSheet> {
     }
   }
 
+  @override
+  void dispose() {
+    title.dispose();
+    content.dispose();
+    super.dispose();
+  }
+
   Future<void> save() async {
     final normalizedTitle = title.text.trim();
     final normalizedContent = content.text.trim();

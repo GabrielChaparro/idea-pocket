@@ -116,7 +116,7 @@ Flutter Web:
 
 ```bash
 cd app
-flutter build web --dart-define=API_BASE_URL=http://127.0.0.1:8080/api
+flutter build web --pwa-strategy=none --dart-define=API_BASE_URL=http://127.0.0.1:8080/api
 ```
 
 Backend JAR:
@@ -181,7 +181,7 @@ Build the app with the deployed backend URL:
 
 ```bash
 cd app
-flutter build web --dart-define=API_BASE_URL=https://your-api-domain.com/api
+flutter build web --pwa-strategy=none --dart-define=API_BASE_URL=https://your-api-domain.com/api
 ```
 
 Deploy `app/build/web` to a static hosting provider:
@@ -194,7 +194,7 @@ Deploy `app/build/web` to a static hosting provider:
 For Cloudflare Pages, a simple setup is:
 
 ```text
-Build command: cd app && flutter build web --dart-define=API_BASE_URL=https://your-api-domain.com/api
+Build command: cd app && flutter build web --pwa-strategy=none --dart-define=API_BASE_URL=https://your-api-domain.com/api
 Build output directory: app/build/web
 ```
 
