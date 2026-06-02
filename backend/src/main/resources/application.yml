@@ -1,0 +1,23 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: ideapocket-api
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/ideapocket}
+    username: ${DATABASE_USER:ideapocket}
+    password: ${DATABASE_PASSWORD:ideapocket}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:change-this-development-secret-change-this-development-secret}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}
+  cors:
+    allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:*,http://127.0.0.1:*}
