@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/api_client.dart';
 import '../core/api_exception.dart';
+import '../core/app_theme.dart';
 import 'tag.dart';
 
 class TagManagerDialog extends StatefulWidget {
@@ -39,6 +40,9 @@ class _TagManagerDialogState extends State<TagManagerDialog> {
   }
 
   Future<void> removeTag(Tag tag) async {
+    final confirmed = await confirmDelete(tag);
+    if (!confirmed) return;
+
     try {
       await widget.api.deleteTag(tag.id);
       setState(() {
@@ -50,10 +54,36 @@ class _TagManagerDialogState extends State<TagManagerDialog> {
     }
   }
 
+  Future<bool> confirmDelete(Tag tag) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'BORRAR ETIQUETA',
+          style: TextStyle(fontWeight: FontWeight.w900, color: retroRed),
+        ),
+        content: Text('Esta acción quitará la etiqueta de los registros asociados.\n\n${tag.name}'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancelar')),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(context).pop(true),
+            icon: const Icon(Icons.delete_outline),
+            label: const Text('Borrar'),
+          ),
+        ],
+      ),
+    );
+
+    return result == true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Etiquetas'),
+      title: const Text(
+        'ETIQUETAS',
+        style: TextStyle(fontWeight: FontWeight.w900, color: retroShell),
+      ),
       content: SizedBox(
         width: 420,
         child: Column(
@@ -83,7 +113,7 @@ class _TagManagerDialogState extends State<TagManagerDialog> {
                     return ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: const Icon(Icons.label_outline),
-                      title: Text(tag.name),
+                      title: Text(tag.name, style: const TextStyle(fontWeight: FontWeight.w800)),
                       trailing: IconButton(
                         onPressed: () => removeTag(tag),
                         icon: const Icon(Icons.delete_outline),

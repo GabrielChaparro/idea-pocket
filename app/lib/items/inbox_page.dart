@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../core/api_client.dart';
 import '../core/api_exception.dart';
+import '../core/app_theme.dart';
+import '../core/retro_panel.dart';
 import '../tags/tag.dart';
 import '../tags/tag_manager_dialog.dart';
 import 'item.dart';
@@ -28,6 +30,8 @@ class _InboxPageState extends State<InboxPage> {
   String? type;
   String? status;
   String? tagId;
+  String? dueFilter;
+  String order = 'CREATED_DESC';
 
   @override
   void initState() {
@@ -42,8 +46,17 @@ class _InboxPageState extends State<InboxPage> {
       error = null;
     });
     try {
+      final dueRange = currentDueRange;
       final nextTags = await api.tags();
-      final nextItems = await api.items(type: type, status: status, search: search.text, tagId: tagId);
+      final nextItems = await api.items(
+        type: type,
+        status: status,
+        search: search.text,
+        tagId: tagId,
+        dueFrom: dueRange?.from,
+        dueTo: dueRange?.to,
+        order: order,
+      );
       setState(() {
         tags = nextTags;
         items = nextItems;
@@ -94,6 +107,12 @@ class _InboxPageState extends State<InboxPage> {
   }
 
   Future<void> deleteItem(Item item) async {
+    final confirmed = await confirmDelete(
+      title: 'BORRAR REGISTRO',
+      message: item.title?.isNotEmpty == true ? item.title! : item.content,
+    );
+    if (!confirmed) return;
+
     try {
       await api.delete(item.id);
       load();
@@ -106,12 +125,36 @@ class _InboxPageState extends State<InboxPage> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMessage(error))));
   }
 
+  Future<bool> confirmDelete({required String title, required String message}) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w900, color: retroRed)),
+        content: Text(
+          'Esta acción no se puede deshacer.\n\n$message',
+          maxLines: 5,
+          overflow: TextOverflow.ellipsis,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancelar')),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(context).pop(true),
+            icon: const Icon(Icons.delete_outline),
+            label: const Text('Borrar'),
+          ),
+        ],
+      ),
+    );
+
+    return result == true;
+  }
+
   @override
   Widget build(BuildContext context) {
     final wide = MediaQuery.sizeOf(context).width >= 800;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('IdeaPocket'),
+        title: const Text('IDEAPOCKET'),
         actions: [
           IconButton(onPressed: load, icon: const Icon(Icons.refresh), tooltip: 'Actualizar'),
           IconButton(onPressed: manageTags, icon: const Icon(Icons.label_outline), tooltip: 'Etiquetas'),
@@ -126,12 +169,43 @@ class _InboxPageState extends State<InboxPage> {
       body: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: wide ? 1100 : 640),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                child: Column(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+            child: RetroPanel(
+              color: const Color(0xFF7D8CC4),
+              padding: const EdgeInsets.all(12),
+              shadow: false,
+              child: Column(
+                children: [
+                  Container(
+                    width: 78,
+                    height: 8,
+                    margin: const EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                      color: retroInk,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  RetroScreen(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
                   children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.circle, size: 10, color: retroRed),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${items.length.toString().padLeft(2, '0')} REGISTROS',
+                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12),
+                        ),
+                        const Spacer(),
+                        Text(
+                          loading ? 'SYNC...' : 'READY',
+                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
                     TextField(
                       controller: search,
                       decoration: InputDecoration(
@@ -141,7 +215,17 @@ class _InboxPageState extends State<InboxPage> {
                       ),
                       onSubmitted: (_) => load(),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
+                    SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(value: 'CREATED_DESC', label: Text('Recientes'), icon: Icon(Icons.history)),
+                        ButtonSegment(value: 'DUE_ASC', label: Text('Vence'), icon: Icon(Icons.event)),
+                        ButtonSegment(value: 'PRIORITY_DESC', label: Text('Prioridad'), icon: Icon(Icons.priority_high)),
+                      ],
+                      selected: {order},
+                      onSelectionChanged: (value) => _setOrder(value.first),
+                    ),
+                    const SizedBox(height: 10),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
@@ -150,9 +234,24 @@ class _InboxPageState extends State<InboxPage> {
                         FilterChip(label: const Text('Notas'), selected: type == 'NOTE', onSelected: (_) => _setType('NOTE')),
                         FilterChip(label: const Text('Tareas'), selected: type == 'TASK', onSelected: (_) => _setType('TASK')),
                         FilterChip(
+                          label: const Text('Pendientes'),
+                          selected: status == 'ACTIVE',
+                          onSelected: (_) => _setStatus('ACTIVE'),
+                        ),
+                        FilterChip(
                           label: const Text('Completadas'),
                           selected: status == 'COMPLETED',
                           onSelected: (_) => _setStatus('COMPLETED'),
+                        ),
+                        FilterChip(
+                          label: const Text('Hoy'),
+                          selected: dueFilter == 'TODAY',
+                          onSelected: (_) => _setDueFilter('TODAY'),
+                        ),
+                        FilterChip(
+                          label: const Text('Vencidas'),
+                          selected: dueFilter == 'OVERDUE',
+                          onSelected: (_) => _setDueFilter('OVERDUE'),
                         ),
                         for (final tag in tags)
                           FilterChip(
@@ -160,47 +259,65 @@ class _InboxPageState extends State<InboxPage> {
                             selected: tagId == tag.id,
                             onSelected: (_) => _setTag(tag.id),
                           ),
+                        if (hasActiveFilters)
+                          ActionChip(
+                            avatar: const Icon(Icons.close, size: 16),
+                            label: const Text('Limpiar'),
+                            onPressed: clearFilters,
+                          ),
                       ],
                     ),
                   ],
                 ),
               ),
-              Expanded(
-                child: loading
-                    ? const Center(child: CircularProgressIndicator())
-                    : error != null
-                        ? Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(24),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(error!, textAlign: TextAlign.center),
-                                  const SizedBox(height: 12),
-                                  FilledButton.icon(
-                                    onPressed: load,
-                                    icon: const Icon(Icons.refresh),
-                                    label: const Text('Reintentar'),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: loading
+                          ? const Center(child: CircularProgressIndicator())
+                          : error != null
+                              ? Center(
+                                  child: RetroScreen(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(error!, textAlign: TextAlign.center),
+                                        const SizedBox(height: 12),
+                                        FilledButton.icon(
+                                          onPressed: load,
+                                          icon: const Icon(Icons.refresh),
+                                          label: const Text('Reintentar'),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ],
-                              ),
-                            ),
-                          )
-                    : items.isEmpty
-                        ? const Center(child: Text('Sin registros todavía'))
-                        : ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
-                            itemCount: items.length,
-                            separatorBuilder: (context, index) => const SizedBox(height: 8),
-                            itemBuilder: (context, index) => ItemTile(
-                              item: items[index],
-                              onEdit: () => edit(items[index]),
-                              onComplete: () => completeItem(items[index]),
-                              onDelete: () => deleteItem(items[index]),
-                            ),
-                          ),
+                                )
+                              : items.isEmpty
+                                  ? Center(
+                                      child: RetroScreen(
+                                        shadow: false,
+                                        child: Text(
+                                          emptyMessage,
+                                          style: const TextStyle(fontWeight: FontWeight.w900),
+                                        ),
+                                      ),
+                                    )
+                                  : ListView.separated(
+                                      padding: const EdgeInsets.fromLTRB(4, 4, 4, 96),
+                                      itemCount: items.length,
+                                      separatorBuilder: (context, index) => const SizedBox(height: 10),
+                                      itemBuilder: (context, index) => ItemTile(
+                                        item: items[index],
+                                        onEdit: () => edit(items[index]),
+                                        onComplete: () => completeItem(items[index]),
+                                        onDelete: () => deleteItem(items[index]),
+                                      ),
+                                    ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -221,4 +338,54 @@ class _InboxPageState extends State<InboxPage> {
     setState(() => tagId = tagId == value ? null : value);
     load();
   }
+
+  void _setDueFilter(String value) {
+    setState(() {
+      dueFilter = dueFilter == value ? null : value;
+      if (value == 'OVERDUE' && dueFilter == 'OVERDUE') {
+        status = 'ACTIVE';
+      }
+    });
+    load();
+  }
+
+  void _setOrder(String value) {
+    setState(() => order = value);
+    load();
+  }
+
+  bool get hasActiveFilters =>
+      type != null || status != null || tagId != null || dueFilter != null || search.text.trim().isNotEmpty;
+
+  String get emptyMessage => hasActiveFilters ? 'Sin resultados para estos filtros' : 'Sin registros todavía';
+
+  void clearFilters() {
+    setState(() {
+      type = null;
+      status = null;
+      tagId = null;
+      dueFilter = null;
+      search.clear();
+    });
+    load();
+  }
+
+  DueRange? get currentDueRange {
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final tomorrowStart = todayStart.add(const Duration(days: 1));
+
+    return switch (dueFilter) {
+      'TODAY' => DueRange(todayStart, tomorrowStart),
+      'OVERDUE' => DueRange(null, now),
+      _ => null,
+    };
+  }
+}
+
+class DueRange {
+  DueRange(this.from, this.to);
+
+  final DateTime? from;
+  final DateTime? to;
 }

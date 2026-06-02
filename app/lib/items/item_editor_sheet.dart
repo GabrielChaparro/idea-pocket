@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../core/api_client.dart';
 import '../core/api_exception.dart';
+import '../core/app_theme.dart';
+import '../core/retro_panel.dart';
 import '../tags/tag.dart';
 import 'item.dart';
 
@@ -21,6 +23,7 @@ class _ItemEditorSheetState extends State<ItemEditorSheet> {
   final content = TextEditingController();
   String type = 'IDEA';
   String priority = 'NORMAL';
+  DateTime? dueDate;
   Set<String> selectedTagIds = {};
   bool saving = false;
   String? error;
@@ -34,6 +37,7 @@ class _ItemEditorSheetState extends State<ItemEditorSheet> {
       content.text = item.content;
       type = item.type;
       priority = item.priority;
+      dueDate = item.dueDate;
       selectedTagIds = item.tags.map((tag) => tag.id).toSet();
     }
   }
@@ -61,6 +65,7 @@ class _ItemEditorSheetState extends State<ItemEditorSheet> {
           title: normalizedTitle.isEmpty ? null : normalizedTitle,
           content: fallbackContent,
           priority: priority,
+          dueDate: type == 'TASK' ? dueDate : null,
           tagIds: selectedTagIds.toList(),
         );
       } else {
@@ -70,6 +75,7 @@ class _ItemEditorSheetState extends State<ItemEditorSheet> {
           title: normalizedTitle.isEmpty ? null : normalizedTitle,
           content: fallbackContent,
           priority: priority,
+          dueDate: type == 'TASK' ? dueDate : null,
           tagIds: selectedTagIds.toList(),
         );
       }
@@ -87,17 +93,26 @@ class _ItemEditorSheetState extends State<ItemEditorSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: MediaQuery.viewInsetsOf(context).bottom + 16,
-      ),
-      child: Column(
+    return SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: MediaQuery.viewInsetsOf(context).bottom + 16,
+        ),
+        child: RetroPanel(
+          shadow: false,
+          color: const Color(0xFFECE6C4),
+          child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Text(
+            widget.item == null ? 'NUEVA CAPTURA' : 'EDITAR CAPTURA',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: retroShell),
+          ),
+          const SizedBox(height: 12),
           SegmentedButton<String>(
             segments: const [
               ButtonSegment(value: 'IDEA', label: Text('Idea'), icon: Icon(Icons.lightbulb_outline)),
@@ -105,7 +120,12 @@ class _ItemEditorSheetState extends State<ItemEditorSheet> {
               ButtonSegment(value: 'TASK', label: Text('Tarea'), icon: Icon(Icons.check_circle_outline)),
             ],
             selected: {type},
-            onSelectionChanged: (value) => setState(() => type = value.first),
+            onSelectionChanged: (value) {
+              setState(() {
+                type = value.first;
+                if (type != 'TASK') dueDate = null;
+              });
+            },
           ),
           const SizedBox(height: 12),
           SegmentedButton<String>(
@@ -133,6 +153,20 @@ class _ItemEditorSheetState extends State<ItemEditorSheet> {
               if (error != null) setState(() => error = null);
             },
           ),
+          if (type == 'TASK') ...[
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: pickDueDate,
+              icon: const Icon(Icons.event),
+              label: Text(dueDate == null ? 'Añadir fecha límite' : 'Límite: ${formatDateTime(dueDate!)}'),
+            ),
+            if (dueDate != null)
+              TextButton.icon(
+                onPressed: () => setState(() => dueDate = null),
+                icon: const Icon(Icons.close),
+                label: const Text('Quitar fecha límite'),
+              ),
+          ],
           if (widget.tags.isNotEmpty) ...[
             const SizedBox(height: 12),
             Wrap(
@@ -164,6 +198,35 @@ class _ItemEditorSheetState extends State<ItemEditorSheet> {
           ),
         ],
       ),
+        ),
+      ),
     );
+  }
+
+  Future<void> pickDueDate() async {
+    final now = DateTime.now();
+    final initial = dueDate ?? now;
+    final date = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(now.year - 1),
+      lastDate: DateTime(now.year + 5),
+    );
+    if (date == null || !mounted) return;
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(initial),
+    );
+    if (time == null || !mounted) return;
+
+    setState(() {
+      dueDate = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    });
+  }
+
+  String formatDateTime(DateTime value) {
+    String two(int number) => number.toString().padLeft(2, '0');
+    return '${two(value.day)}/${two(value.month)}/${value.year} ${two(value.hour)}:${two(value.minute)}';
   }
 }

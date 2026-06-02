@@ -9,6 +9,7 @@ class Item {
     required this.priority,
     required this.tags,
     this.title,
+    this.dueDate,
   });
 
   final String id;
@@ -18,6 +19,7 @@ class Item {
   final String status;
   final String priority;
   final List<Tag> tags;
+  final DateTime? dueDate;
 
   factory Item.fromJson(Map<String, dynamic> json) {
     return Item(
@@ -27,10 +29,10 @@ class Item {
       content: json['content'] as String,
       status: json['status'] as String,
       priority: json['priority'] as String,
+      dueDate: json['dueDate'] == null ? null : DateTime.parse(json['dueDate'] as String).toLocal(),
       tags: (json['tags'] as List<dynamic>? ?? [])
           .map((tag) => Tag.fromJson(tag as Map<String, dynamic>))
           .toList(),
     );
   }
 }
-

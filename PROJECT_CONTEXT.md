@@ -40,7 +40,15 @@ IdeaPocket es una app personal para capturar ideas, pendientes, notas rápidas y
 │       ├── tags/
 │       ├── app.dart
 │       └── main.dart
+│   └── .env.example
+├── backend/
+│   ├── Dockerfile
+│   ├── .dockerignore
+│   └── .env.example
+├── app/
+│   └── .dockerignore
 ├── docker-compose.yml
+├── render.yaml
 ├── README.md
 └── PROJECT_CONTEXT.md
 ```
@@ -96,6 +104,15 @@ IdeaPocket es una app personal para capturar ideas, pendientes, notas rápidas y
   - etiquetas duplicadas
   - filtro por etiqueta
 - Serialización estable de páginas con `PageSerializationMode.VIA_DTO`.
+- Healthcheck público `GET /api/health`:
+  - estado general
+  - nombre de app
+  - estado de base de datos
+  - timestamp
+- Soporte de despliegue:
+  - `backend/Dockerfile` multi-stage
+  - conversión automática de URLs `postgres://...` / `postgresql://...` a JDBC
+  - variables de entorno listas para producción
 
 ### Flutter
 
@@ -117,6 +134,20 @@ IdeaPocket es una app personal para capturar ideas, pendientes, notas rápidas y
   - eliminar
   - asignar a registros
   - filtrar por etiqueta
+- Confirmación antes de borrar registros y etiquetas.
+- Filtro rápido de pendientes.
+- Fechas límite para tareas desde Flutter.
+- Filtros de fecha:
+  - Hoy
+  - Vencidas
+- Backend permite filtrar items por `dueFrom` y `dueTo`.
+- Orden seleccionable:
+  - recientes
+  - vencimiento
+  - prioridad
+- Backend soporta `order=CREATED_DESC|DUE_ASC|PRIORITY_DESC`.
+- Botón para limpiar filtros activos.
+- Estado vacío diferenciado para filtros sin resultados.
 - Completar/reabrir items.
 - Eliminar items.
 - Frontend modularizado:
@@ -129,6 +160,12 @@ IdeaPocket es una app personal para capturar ideas, pendientes, notas rápidas y
   - estado de error/reintento en listado
   - errores visibles en login, editor y etiquetas
   - snackbars para acciones sobre items
+- Estilo visual retro handheld:
+  - paleta azul/mint/ámbar
+  - tipografía monoespaciada
+  - paneles con borde marcado y sombra dura
+  - pantalla principal tipo consola portátil
+  - tarjetas y modales adaptados al mismo lenguaje visual
 - Consumo de API REST configurable con:
 
 ```bash
@@ -138,7 +175,12 @@ IdeaPocket es una app personal para capturar ideas, pendientes, notas rápidas y
 ### Infraestructura Local
 
 - `docker-compose.yml` con PostgreSQL 16.
-- `README.md` con comandos mínimos de arranque.
+- `README.md` con comandos de arranque, tests, builds, despliegue, variables y troubleshooting.
+- `backend/.env.example` con variables del API.
+- `app/.env.example` con `API_BASE_URL`.
+- `backend/Dockerfile` para empaquetar la API.
+- `.dockerignore` en backend y Flutter para excluir builds, `.env` y archivos locales.
+- `render.yaml` como blueprint opcional para desplegar API + PostgreSQL en Render.
 - Git inicializado en rama `main`.
 
 ## Verificación Realizada
@@ -150,7 +192,7 @@ cd backend
 mvn test
 ```
 
-Resultado: correcto. Actualmente ejecuta 6 tests de integración.
+Resultado: correcto. Actualmente ejecuta 9 tests de integración.
 
 Flutter:
 
@@ -164,13 +206,13 @@ flutter build web --dart-define=API_BASE_URL=http://localhost:8080/api
 
 Resultado: correcto.
 
-No se pudo levantar el entorno completo porque Docker no está activo:
+Docker:
 
 ```bash
-docker compose up -d db
+docker build -t ideapocket-api ./backend
 ```
 
-Resultado: `Cannot connect to the Docker daemon`.
+Resultado: correcto. Se generó la imagen local `ideapocket-api:latest`.
 
 ## Cómo Arrancar
 
@@ -208,25 +250,23 @@ flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8080/api
 
 ## Dónde Me Quedo
 
-El proyecto tiene una primera base funcional creada. El backend compila. La app Flutter tiene una primera interfaz conectada a la API REST y pasa análisis, test inicial y build web.
-
-No hay todavía una ejecución end-to-end validada con backend + PostgreSQL + Flutter interactuando en navegador porque Docker no está arrancado en la máquina.
+El proyecto tiene una primera base funcional creada. El backend compila, pasa tests y puede empaquetarse como imagen Docker. La app Flutter tiene una interfaz conectada a la API REST y pasa análisis, test inicial y build web. El despliegue inicial queda preparado a nivel de Dockerfile, healthcheck, variables y documentación.
 
 ## Siguiente Trabajo Recomendado
 
-1. Abrir Docker Desktop o arrancar el daemon de Docker.
-2. Ejecutar PostgreSQL con Docker.
-3. Levantar backend y confirmar que Flyway crea el esquema.
-4. Probar manualmente:
+1. Ejecutar una prueba end-to-end local con PostgreSQL + backend + Flutter Web.
+2. Probar manualmente:
    - registro
    - login
    - creación de item
    - listado
    - completar tarea
    - eliminar item
-5. Crear `.env.example` o documentación de variables.
-6. Añadir confirmación antes de borrar items/etiquetas.
-7. Introducir Riverpod si la UI empieza a compartir más estado entre pantallas.
+3. Publicar backend en Render/Railway con PostgreSQL gestionado.
+4. Publicar Flutter Web en Cloudflare Pages, Netlify, Vercel o Firebase Hosting.
+5. Actualizar `CORS_ALLOWED_ORIGIN_PATTERNS` con el dominio real de Flutter Web.
+6. Introducir Riverpod si la UI empieza a compartir más estado entre pantallas.
+7. Añadir vista de detalle más rica para notas largas.
 
 ## Riesgos / Deuda Técnica Actual
 
@@ -234,6 +274,7 @@ No hay todavía una ejecución end-to-end validada con backend + PostgreSQL + Fl
 - En Flutter Web se guarda token en `shared_preferences`; para producción convendría revisar estrategia con cookies httpOnly o endurecer seguridad.
 - No hay modo offline.
 - No hay gestión de estado formal; si crece la UI, conviene introducir Riverpod.
+- El blueprint `render.yaml` contiene un dominio placeholder para CORS y debe ajustarse antes de usarlo en producción.
 
 ## Regla De Trabajo
 

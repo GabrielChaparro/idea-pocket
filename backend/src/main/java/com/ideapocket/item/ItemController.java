@@ -4,6 +4,7 @@ import com.ideapocket.item.ItemDtos.ItemRequest;
 import com.ideapocket.item.ItemDtos.ItemResponse;
 import com.ideapocket.security.AuthenticatedUser;
 import jakarta.validation.Valid;
+import java.time.Instant;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,9 +39,12 @@ public class ItemController {
         @RequestParam(required = false) ItemStatus status,
         @RequestParam(required = false) String search,
         @RequestParam(required = false) UUID tagId,
+        @RequestParam(required = false) Instant dueFrom,
+        @RequestParam(required = false) Instant dueTo,
+        @RequestParam(defaultValue = "CREATED_DESC") ItemOrder order,
         @PageableDefault(size = 50, sort = "createdAt") Pageable pageable
     ) {
-        return itemService.list(AuthenticatedUser.id(authentication), type, status, search, tagId, pageable);
+        return itemService.list(AuthenticatedUser.id(authentication), type, status, search, tagId, dueFrom, dueTo, order, pageable);
     }
 
     @PostMapping
@@ -75,4 +79,3 @@ public class ItemController {
         itemService.delete(AuthenticatedUser.id(authentication), id);
     }
 }
-

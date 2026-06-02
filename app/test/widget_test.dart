@@ -10,7 +10,7 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(find.text('IdeaPocket'), findsOneWidget);
+    expect(find.text('IDEAPOCKET'), findsOneWidget);
     expect(find.text('Entrar'), findsOneWidget);
   });
 }

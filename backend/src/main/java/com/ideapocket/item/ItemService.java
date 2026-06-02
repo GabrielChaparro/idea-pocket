@@ -10,11 +10,14 @@ import com.ideapocket.user.UserRepository;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.time.Instant;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -33,9 +36,22 @@ public class ItemService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ItemResponse> list(UUID userId, ItemType type, ItemStatus status, String search, UUID tagId, Pageable pageable) {
+    public Page<ItemResponse> list(
+        UUID userId,
+        ItemType type,
+        ItemStatus status,
+        String search,
+        UUID tagId,
+        Instant dueFrom,
+        Instant dueTo,
+        ItemOrder order,
+        Pageable pageable
+    ) {
         String normalizedSearch = search == null || search.isBlank() ? null : search.trim();
-        return items.findAll(specification(userId, type, status, normalizedSearch, tagId), pageable).map(ItemResponse::from);
+        return items.findAll(
+            specification(userId, type, status, normalizedSearch, tagId, dueFrom, dueTo, order),
+            orderedPageable(pageable, order)
+        ).map(ItemResponse::from);
     }
 
     @Transactional(readOnly = true)
@@ -95,9 +111,18 @@ public class ItemService {
         return resolved;
     }
 
-    private Specification<Item> specification(UUID userId, ItemType type, ItemStatus status, String search, UUID tagId) {
+    private Specification<Item> specification(
+        UUID userId,
+        ItemType type,
+        ItemStatus status,
+        String search,
+        UUID tagId,
+        Instant dueFrom,
+        Instant dueTo,
+        ItemOrder order
+    ) {
         return (root, query, cb) -> {
-            if (query != null) {
+            if (query != null && tagId != null) {
                 query.distinct(true);
             }
 
@@ -126,7 +151,39 @@ public class ItemService {
                 predicates.add(cb.equal(tagJoin.get("id"), tagId));
             }
 
+            if (dueFrom != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("dueDate"), dueFrom));
+            }
+
+            if (dueTo != null) {
+                predicates.add(cb.lessThan(root.get("dueDate"), dueTo));
+            }
+
+            if (query != null && query.getResultType() != Long.class && order == ItemOrder.PRIORITY_DESC) {
+                var priorityRank = cb.selectCase()
+                    .when(cb.equal(root.get("priority"), Priority.HIGH), 0)
+                    .when(cb.equal(root.get("priority"), Priority.NORMAL), 1)
+                    .otherwise(2);
+                query.orderBy(
+                    cb.asc(priorityRank),
+                    cb.desc(root.get("createdAt"))
+                );
+            }
+
             return cb.and(predicates.toArray(Predicate[]::new));
         };
+    }
+
+    private Pageable orderedPageable(Pageable pageable, ItemOrder order) {
+        Sort sort = switch (order) {
+            case DUE_ASC -> Sort.by(
+                Sort.Order.asc("dueDate").nullsLast(),
+                Sort.Order.desc("createdAt")
+            );
+            case PRIORITY_DESC -> Sort.unsorted();
+            case CREATED_DESC -> Sort.by(Sort.Order.desc("createdAt"));
+        };
+
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
     }
 }

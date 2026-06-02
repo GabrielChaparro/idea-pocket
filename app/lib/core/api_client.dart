@@ -17,12 +17,22 @@ class ApiClient {
         'Content-Type': 'application/json',
       };
 
-  Future<List<Item>> items({String? type, String? status, String? search, String? tagId}) async {
-    final params = <String, String>{'sort': 'createdAt,desc'};
+  Future<List<Item>> items({
+    String? type,
+    String? status,
+    String? search,
+    String? tagId,
+    DateTime? dueFrom,
+    DateTime? dueTo,
+    String order = 'CREATED_DESC',
+  }) async {
+    final params = <String, String>{'order': order};
     if (type != null) params['type'] = type;
     if (status != null) params['status'] = status;
     if (search != null && search.trim().isNotEmpty) params['search'] = search.trim();
     if (tagId != null) params['tagId'] = tagId;
+    if (dueFrom != null) params['dueFrom'] = dueFrom.toUtc().toIso8601String();
+    if (dueTo != null) params['dueTo'] = dueTo.toUtc().toIso8601String();
 
     final uri = Uri.parse('$apiBaseUrl/items').replace(queryParameters: params);
     final response = await http.get(uri, headers: headers);
@@ -43,6 +53,7 @@ class ApiClient {
     required String content,
     String? title,
     String priority = 'NORMAL',
+    DateTime? dueDate,
     List<String> tagIds = const [],
   }) async {
     final response = await http.post(
@@ -53,6 +64,7 @@ class ApiClient {
         'title': title?.trim().isEmpty == true ? null : title?.trim(),
         'content': content.trim(),
         'priority': priority,
+        'dueDate': dueDate?.toUtc().toIso8601String(),
         'tagIds': tagIds,
       }),
     );
@@ -65,6 +77,7 @@ class ApiClient {
     required String content,
     String? title,
     String priority = 'NORMAL',
+    DateTime? dueDate,
     List<String> tagIds = const [],
   }) async {
     final response = await http.put(
@@ -75,6 +88,7 @@ class ApiClient {
         'title': title?.trim().isEmpty == true ? null : title?.trim(),
         'content': content.trim(),
         'priority': priority,
+        'dueDate': dueDate?.toUtc().toIso8601String(),
         'tagIds': tagIds,
       }),
     );

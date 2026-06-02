@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -28,6 +29,16 @@ class ApiIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Test
+    void healthIsPublicAndReportsDatabase() throws Exception {
+        mockMvc.perform(get("/api/health"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("UP"))
+            .andExpect(jsonPath("$.application").value("ideapocket-api"))
+            .andExpect(jsonPath("$.database").value("UP"))
+            .andExpect(jsonPath("$.time").isString());
+    }
 
     @Test
     void registerLoginAndRejectDuplicateEmail() throws Exception {
@@ -210,6 +221,58 @@ class ApiIntegrationTest {
     }
 
     @Test
+    void filterItemsByDueDateRange() throws Exception {
+        String token = registerAndToken(uniqueEmail("due"));
+        Instant dueDate = Instant.parse("2026-06-05T10:00:00Z");
+
+        mockMvc.perform(post("/api/items")
+                .header("Authorization", bearer(token))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "type": "TASK",
+                      "title": "Tarea con fecha",
+                      "content": "Contenido",
+                      "priority": "NORMAL",
+                      "dueDate": "%s",
+                      "tagIds": []
+                    }
+                    """.formatted(dueDate)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.dueDate").value(containsString("2026-06-05T10:00:00")));
+
+        mockMvc.perform(get("/api/items")
+                .header("Authorization", bearer(token))
+                .param("dueFrom", "2026-06-05T00:00:00Z")
+                .param("dueTo", "2026-06-06T00:00:00Z"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0].title").value("Tarea con fecha"));
+
+        mockMvc.perform(get("/api/items")
+                .header("Authorization", bearer(token))
+                .param("dueFrom", "2026-06-06T00:00:00Z"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content").isEmpty());
+    }
+
+    @Test
+    void orderItemsByPriority() throws Exception {
+        String token = registerAndToken(uniqueEmail("priority"));
+
+        createItem(token, "LOW", "Baja");
+        createItem(token, "HIGH", "Alta");
+        createItem(token, "NORMAL", "Normal");
+
+        mockMvc.perform(get("/api/items")
+                .header("Authorization", bearer(token))
+                .param("order", "PRIORITY_DESC"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0].title").value("Alta"))
+            .andExpect(jsonPath("$.content[1].title").value("Normal"))
+            .andExpect(jsonPath("$.content[2].title").value("Baja"));
+    }
+
+    @Test
     void endpointsRequireAuthentication() throws Exception {
         mockMvc.perform(get("/api/items"))
             .andExpect(status().isForbidden());
@@ -248,6 +311,22 @@ class ApiIntegrationTest {
         return json.get("token").asText();
     }
 
+    private void createItem(String token, String priority, String title) throws Exception {
+        mockMvc.perform(post("/api/items")
+                .header("Authorization", bearer(token))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "type": "TASK",
+                      "title": "%s",
+                      "content": "Contenido",
+                      "priority": "%s",
+                      "tagIds": []
+                    }
+                    """.formatted(title, priority)))
+            .andExpect(status().isCreated());
+    }
+
     private String bearer(String token) {
         return "Bearer " + token;
     }
@@ -256,4 +335,3 @@ class ApiIntegrationTest {
         return prefix + "-" + System.nanoTime() + "@example.com";
     }
 }
-
