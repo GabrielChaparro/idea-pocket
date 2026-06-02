@@ -23,11 +23,10 @@ services:
       - key: JWT_EXPIRATION_MINUTES
         value: 60
       - key: CORS_ALLOWED_ORIGIN_PATTERNS
-        value: https://your-flutter-web-domain.example.com
+        value: http://localhost:*,http://127.0.0.1:*,https://your-flutter-web-domain.example.com
 
 databases:
   - name: ideapocket-db
     plan: free
     databaseName: ideapocket
     user: ideapocket
-
