@@ -7,6 +7,13 @@ const retroPanel = Color(0xFFF7F3D6);
 const retroMint = Color(0xFF5FB87B);
 const retroAmber = Color(0xFFE4A72D);
 const retroRed = Color(0xFFD94D4D);
+const retroInputTextStyle = TextStyle(
+  color: retroInk,
+  fontFamily: 'monospace',
+  fontSize: 15,
+  fontWeight: FontWeight.w800,
+  letterSpacing: 0,
+);
 
 ThemeData buildAppTheme() {
   const colorScheme = ColorScheme(
@@ -31,6 +38,12 @@ ThemeData buildAppTheme() {
     fontFamily: 'monospace',
     useMaterial3: true,
     scaffoldBackgroundColor: const Color(0xFFB7C7D8),
+    textTheme: ThemeData.light().textTheme.apply(fontFamily: 'monospace', bodyColor: retroInk, displayColor: retroInk),
+    textSelectionTheme: const TextSelectionThemeData(
+      cursorColor: retroShell,
+      selectionColor: Color(0x665FB87B),
+      selectionHandleColor: retroShell,
+    ),
     appBarTheme: const AppBarTheme(
       backgroundColor: retroShell,
       foregroundColor: Colors.white,
@@ -56,7 +69,11 @@ ThemeData buildAppTheme() {
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: retroScreen,
-      labelStyle: const TextStyle(color: retroInk, fontWeight: FontWeight.w700),
+      labelStyle: const TextStyle(color: retroInk, fontFamily: 'monospace', fontWeight: FontWeight.w800),
+      floatingLabelStyle: const TextStyle(color: retroShell, fontFamily: 'monospace', fontWeight: FontWeight.w900),
+      hintStyle: const TextStyle(color: Color(0xFF4F5847), fontFamily: 'monospace', fontWeight: FontWeight.w700),
+      errorStyle: const TextStyle(color: retroRed, fontFamily: 'monospace', fontWeight: FontWeight.w800),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       prefixIconColor: retroInk,
       suffixIconColor: retroInk,
       border: OutlineInputBorder(

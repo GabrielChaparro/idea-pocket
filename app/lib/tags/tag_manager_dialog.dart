@@ -91,6 +91,7 @@ class _TagManagerDialogState extends State<TagManagerDialog> {
           children: [
             TextField(
               controller: controller,
+              style: retroInputTextStyle,
               decoration: InputDecoration(
                 labelText: 'Nueva etiqueta',
                 errorText: error,

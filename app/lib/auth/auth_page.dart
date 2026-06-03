@@ -94,13 +94,14 @@ class _AuthPageState extends State<AuthPage> {
                 ),
                 const SizedBox(height: 18),
                 if (register) ...[
-                  TextField(controller: name, decoration: const InputDecoration(labelText: 'Nombre')),
+                  TextField(controller: name, style: retroInputTextStyle, decoration: const InputDecoration(labelText: 'Nombre')),
                   const SizedBox(height: 12),
                 ],
-                TextField(controller: email, decoration: const InputDecoration(labelText: 'Email')),
+                TextField(controller: email, style: retroInputTextStyle, decoration: const InputDecoration(labelText: 'Email')),
                 const SizedBox(height: 12),
                 TextField(
                   controller: password,
+                  style: retroInputTextStyle,
                   decoration: const InputDecoration(labelText: 'Password'),
                   obscureText: true,
                 ),

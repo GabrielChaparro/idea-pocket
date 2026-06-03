@@ -145,10 +145,15 @@ class _ItemEditorSheetState extends State<ItemEditorSheet> {
             onSelectionChanged: (value) => setState(() => priority = value.first),
           ),
           const SizedBox(height: 12),
-          TextField(controller: title, decoration: const InputDecoration(labelText: 'Título opcional')),
+          TextField(
+            controller: title,
+            style: retroInputTextStyle,
+            decoration: const InputDecoration(labelText: 'Título opcional'),
+          ),
           const SizedBox(height: 12),
           TextField(
             controller: content,
+            style: retroInputTextStyle,
             decoration: InputDecoration(
               labelText: 'Contenido',
               errorText: error,

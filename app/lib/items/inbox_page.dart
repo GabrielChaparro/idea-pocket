@@ -208,6 +208,7 @@ class _InboxPageState extends State<InboxPage> {
                     const SizedBox(height: 10),
                     TextField(
                       controller: search,
+                      style: retroInputTextStyle,
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.search),
                         labelText: 'Buscar',
@@ -216,14 +217,32 @@ class _InboxPageState extends State<InboxPage> {
                       onSubmitted: (_) => load(),
                     ),
                     const SizedBox(height: 10),
-                    SegmentedButton<String>(
-                      segments: const [
-                        ButtonSegment(value: 'CREATED_DESC', label: Text('Recientes'), icon: Icon(Icons.history)),
-                        ButtonSegment(value: 'DUE_ASC', label: Text('Vence'), icon: Icon(Icons.event)),
-                        ButtonSegment(value: 'PRIORITY_DESC', label: Text('Prioridad'), icon: Icon(Icons.priority_high)),
-                      ],
-                      selected: {order},
-                      onSelectionChanged: (value) => _setOrder(value.first),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _OrderChip(
+                            icon: Icons.history,
+                            label: 'Recientes',
+                            selected: order == 'CREATED_DESC',
+                            onPressed: () => _setOrder('CREATED_DESC'),
+                          ),
+                          _OrderChip(
+                            icon: Icons.event,
+                            label: 'Vence',
+                            selected: order == 'DUE_ASC',
+                            onPressed: () => _setOrder('DUE_ASC'),
+                          ),
+                          _OrderChip(
+                            icon: Icons.priority_high,
+                            label: 'Prioridad',
+                            selected: order == 'PRIORITY_DESC',
+                            onPressed: () => _setOrder('PRIORITY_DESC'),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 10),
                     Wrap(
@@ -388,4 +407,42 @@ class DueRange {
 
   final DateTime? from;
   final DateTime? to;
+}
+
+class _OrderChip extends StatelessWidget {
+  const _OrderChip({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: selected ? null : onPressed,
+      icon: Icon(icon, size: 16),
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        backgroundColor: selected ? retroMint : retroPanel,
+        foregroundColor: retroInk,
+        disabledBackgroundColor: retroMint,
+        disabledForegroundColor: retroInk,
+        side: const BorderSide(color: retroInk, width: 1.5),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        textStyle: const TextStyle(
+          fontFamily: 'monospace',
+          fontWeight: FontWeight.w900,
+          fontSize: 12,
+          letterSpacing: 0,
+        ),
+      ),
+    );
+  }
 }
