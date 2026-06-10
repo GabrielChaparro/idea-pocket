@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 
 const retroInk = Color(0xFF17202A);
-const retroShell = Color(0xFF314A9C);
-const retroScreen = Color(0xFFE7F1C8);
-const retroPanel = Color(0xFFF7F3D6);
-const retroMint = Color(0xFF5FB87B);
-const retroAmber = Color(0xFFE4A72D);
-const retroRed = Color(0xFFD94D4D);
+const retroShell = Color(0xFF2637A8);
+const retroScreen = Color(0xFFE6FF8F);
+const retroPanel = Color(0xFFFFF0B8);
+const retroMint = Color(0xFF35D68A);
+const retroAmber = Color(0xFFFFB931);
+const retroRed = Color(0xFFFF4F5E);
+const arcadeViolet = Color(0xFF5B35D5);
+const arcadeCyan = Color(0xFF24C7FF);
+const arcadePink = Color(0xFFFF5CC8);
+const arcadeNight = Color(0xFF15112A);
+const arcadeCabinet = Color(0xFF6B4FE8);
 const retroInputTextStyle = TextStyle(
   color: retroInk,
   fontFamily: 'monospace',
@@ -37,15 +42,19 @@ ThemeData buildAppTheme() {
     colorScheme: colorScheme,
     fontFamily: 'monospace',
     useMaterial3: true,
-    scaffoldBackgroundColor: const Color(0xFFB7C7D8),
-    textTheme: ThemeData.light().textTheme.apply(fontFamily: 'monospace', bodyColor: retroInk, displayColor: retroInk),
+    scaffoldBackgroundColor: arcadeNight,
+    textTheme: ThemeData.light().textTheme.apply(
+      fontFamily: 'monospace',
+      bodyColor: retroInk,
+      displayColor: retroInk,
+    ),
     textSelectionTheme: const TextSelectionThemeData(
       cursorColor: retroShell,
       selectionColor: Color(0x665FB87B),
       selectionHandleColor: retroShell,
     ),
     appBarTheme: const AppBarTheme(
-      backgroundColor: retroShell,
+      backgroundColor: arcadeNight,
       foregroundColor: Colors.white,
       elevation: 0,
       centerTitle: false,
@@ -69,10 +78,26 @@ ThemeData buildAppTheme() {
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: retroScreen,
-      labelStyle: const TextStyle(color: retroInk, fontFamily: 'monospace', fontWeight: FontWeight.w800),
-      floatingLabelStyle: const TextStyle(color: retroShell, fontFamily: 'monospace', fontWeight: FontWeight.w900),
-      hintStyle: const TextStyle(color: Color(0xFF4F5847), fontFamily: 'monospace', fontWeight: FontWeight.w700),
-      errorStyle: const TextStyle(color: retroRed, fontFamily: 'monospace', fontWeight: FontWeight.w800),
+      labelStyle: const TextStyle(
+        color: retroInk,
+        fontFamily: 'monospace',
+        fontWeight: FontWeight.w800,
+      ),
+      floatingLabelStyle: const TextStyle(
+        color: retroShell,
+        fontFamily: 'monospace',
+        fontWeight: FontWeight.w900,
+      ),
+      hintStyle: const TextStyle(
+        color: Color(0xFF4F5847),
+        fontFamily: 'monospace',
+        fontWeight: FontWeight.w700,
+      ),
+      errorStyle: const TextStyle(
+        color: retroRed,
+        fontFamily: 'monospace',
+        fontWeight: FontWeight.w800,
+      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       prefixIconColor: retroInk,
       suffixIconColor: retroInk,
@@ -86,7 +111,7 @@ ThemeData buildAppTheme() {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(6),
-        borderSide: const BorderSide(color: retroShell, width: 3),
+        borderSide: const BorderSide(color: arcadePink, width: 3),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(6),
@@ -95,7 +120,7 @@ ThemeData buildAppTheme() {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: retroAmber,
+        backgroundColor: arcadePink,
         foregroundColor: retroInk,
         disabledBackgroundColor: const Color(0xFF9DA58C),
         disabledForegroundColor: const Color(0xFF4F5847),
@@ -103,14 +128,20 @@ ThemeData buildAppTheme() {
           borderRadius: BorderRadius.circular(6),
           side: const BorderSide(color: retroInk, width: 2),
         ),
-        textStyle: const TextStyle(fontWeight: FontWeight.w900, fontFamily: 'monospace'),
+        textStyle: const TextStyle(
+          fontWeight: FontWeight.w900,
+          fontFamily: 'monospace',
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: retroShell,
-        textStyle: const TextStyle(fontWeight: FontWeight.w800, fontFamily: 'monospace'),
+        textStyle: const TextStyle(
+          fontWeight: FontWeight.w800,
+          fontFamily: 'monospace',
+        ),
       ),
     ),
     iconButtonTheme: IconButtonThemeData(
@@ -123,7 +154,7 @@ ThemeData buildAppTheme() {
       ),
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: retroAmber,
+      backgroundColor: arcadePink,
       foregroundColor: retroInk,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(6)),
@@ -135,7 +166,10 @@ ThemeData buildAppTheme() {
       selectedColor: retroMint,
       secondarySelectedColor: retroMint,
       labelStyle: const TextStyle(color: retroInk, fontWeight: FontWeight.w700),
-      secondaryLabelStyle: const TextStyle(color: retroInk, fontWeight: FontWeight.w900),
+      secondaryLabelStyle: const TextStyle(
+        color: retroInk,
+        fontWeight: FontWeight.w900,
+      ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(6),
         side: const BorderSide(color: retroInk, width: 1.5),
@@ -157,7 +191,11 @@ ThemeData buildAppTheme() {
     ),
     snackBarTheme: const SnackBarThemeData(
       backgroundColor: retroInk,
-      contentTextStyle: TextStyle(color: retroScreen, fontFamily: 'monospace', fontWeight: FontWeight.w700),
+      contentTextStyle: TextStyle(
+        color: retroScreen,
+        fontFamily: 'monospace',
+        fontWeight: FontWeight.w700,
+      ),
       behavior: SnackBarBehavior.floating,
     ),
   );

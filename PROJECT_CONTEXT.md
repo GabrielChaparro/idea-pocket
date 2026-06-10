@@ -160,12 +160,23 @@ IdeaPocket es una app personal para capturar ideas, pendientes, notas rápidas y
   - estado de error/reintento en listado
   - errores visibles en login, editor y etiquetas
   - snackbars para acciones sobre items
-- Estilo visual retro handheld:
-  - paleta azul/mint/ámbar
+- Estilo visual retro arcade:
+  - paleta night/violeta/cyan/pink/ámbar/mint
   - tipografía monoespaciada
   - paneles con borde marcado y sombra dura
-  - pantalla principal tipo consola portátil
-  - tarjetas y modales adaptados al mismo lenguaje visual
+  - pantalla principal tipo arcade capture deck
+  - tarjetas con acento por tipo de registro
+  - modales adaptados al mismo lenguaje visual
+- Ajustes visuales recientes:
+  - campos de texto forzados a tipografía monoespaciada
+  - cursor/selección/labels de inputs alineados con el estilo retro
+  - control de orden reemplazado por botones tipo chip retro
+  - botón Capturar reemplazado por botón arcade propio
+  - logo generado descartado por ahora porque no encajaba y el nombre puede cambiar
+- Funciones recientes de producto en Flutter:
+  - captura rápida tipo consola
+  - parser simple para `tarea:`, `nota:`, `idea:`, `#tag`, `!alta`, `!media`, `!baja`, `hoy` y `mañana`
+  - Vista Hoy con grupos `VENCIDAS`, `PARA HOY` y `SIN FECHA`
 - Consumo de API REST configurable con:
 
 ```bash
@@ -181,7 +192,43 @@ IdeaPocket es una app personal para capturar ideas, pendientes, notas rápidas y
 - `backend/Dockerfile` para empaquetar la API.
 - `.dockerignore` en backend y Flutter para excluir builds, `.env` y archivos locales.
 - `render.yaml` como blueprint opcional para desplegar API + PostgreSQL en Render.
+- `app/web/_headers` para Netlify, evitando cache agresivo en builds web.
 - Git inicializado en rama `main`.
+
+### Despliegue Actual
+
+- Backend desplegado en Render:
+
+```text
+https://idea-pocket.onrender.com
+```
+
+- Healthcheck validado:
+
+```text
+https://idea-pocket.onrender.com/api/health
+```
+
+- Resultado observado:
+  - API `UP`
+  - database `UP`
+  - registro/login funcionan
+  - creación/listado de items funciona
+
+- Flutter Web desplegado en Netlify:
+
+```text
+https://lambent-cat-6c27e2.netlify.app/
+```
+
+- CORS en Render fue actualizado manualmente para permitir:
+
+```text
+https://lambent-cat-6c27e2.netlify.app
+```
+
+- Netlify funciona en móvil y Safari.
+- En Chrome/Chromium de escritorio hubo un problema visual al escribir: el texto no se veía hasta perder foco y parecía que la página se repintaba. Se confirmó que al desactivar la aceleración gráfica de Chrome el problema desaparece, aunque queda más lento. Diagnóstico: problema de render/GPU de Chrome con Flutter Web, no backend/CORS.
 
 ## Verificación Realizada
 
@@ -201,7 +248,7 @@ cd app
 flutter pub get
 flutter analyze
 flutter test
-flutter build web --dart-define=API_BASE_URL=http://localhost:8080/api
+flutter build web --pwa-strategy=none --dart-define=API_BASE_URL=http://localhost:8080/api
 ```
 
 Resultado: correcto.
@@ -233,7 +280,14 @@ Flutter Web:
 
 ```bash
 cd app
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8080/api
+flutter run -d chrome --web-port 3000 --dart-define=API_BASE_URL=http://localhost:8080/api
+```
+
+Flutter Web contra backend desplegado:
+
+```bash
+cd app
+flutter run -d chrome --web-port 3000 --dart-define=API_BASE_URL=https://idea-pocket.onrender.com/api
 ```
 
 ## Decisiones Tomadas
@@ -247,26 +301,25 @@ flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8080/api
 - JWT básico para MVP, con margen para refresh tokens más adelante.
 - Flutter usa una separación simple por feature sin introducir gestión de estado pesada todavía.
 - CORS en desarrollo permite `http://localhost:*` y `http://127.0.0.1:*` porque Flutter Web puede usar puertos dinámicos.
+- Para Netlify se recomienda compilar con `--pwa-strategy=none` para evitar cache/service worker agresivo mientras la app evoluciona rápido.
+- No se adoptó `--wasm` como solución: se probó, pero no resolvió el problema visual de Chrome escritorio. Mantener build web normal por ahora.
 
 ## Dónde Me Quedo
 
-El proyecto tiene una primera base funcional creada. El backend compila, pasa tests y puede empaquetarse como imagen Docker. La app Flutter tiene una interfaz conectada a la API REST y pasa análisis, test inicial y build web. El despliegue inicial queda preparado a nivel de Dockerfile, healthcheck, variables y documentación.
+El proyecto tiene una primera base funcional creada y desplegada. El backend está en Render con PostgreSQL gestionado y el frontend está en Netlify. La app sirve para uso personal en su estado actual. El último corte de frontend movió la UI hacia una dirección retro arcade más viva, añadió captura rápida y Vista Hoy, y queda pendiente validar ese build en Netlify antes de commitear/desplegar como versión estable.
 
 ## Siguiente Trabajo Recomendado
 
-1. Ejecutar una prueba end-to-end local con PostgreSQL + backend + Flutter Web.
-2. Probar manualmente:
-   - registro
-   - login
-   - creación de item
-   - listado
-   - completar tarea
-   - eliminar item
-3. Publicar backend en Render/Railway con PostgreSQL gestionado.
-4. Publicar Flutter Web en Cloudflare Pages, Netlify, Vercel o Firebase Hosting.
-5. Actualizar `CORS_ALLOWED_ORIGIN_PATTERNS` con el dominio real de Flutter Web.
-6. Introducir Riverpod si la UI empieza a compartir más estado entre pantallas.
-7. Añadir vista de detalle más rica para notas largas.
+1. Desplegar el build actual de Flutter Web en Netlify y validar visual/funcionalmente.
+2. Usar la app 2-3 días como herramienta personal y anotar fricciones reales.
+3. Mejorar captura rápida:
+   - crear tags si no existen
+   - detectar fechas con más precisión
+   - confirmar lo interpretado antes de guardar en casos ambiguos
+4. Añadir flujo de procesar inbox.
+5. Añadir vista de detalle más rica para notas largas.
+6. Introducir Riverpod solo si el estado empieza a crecer en varias pantallas.
+7. Evaluar IA más adelante, empezando por sugerencias aceptables/rechazables, no automatización total.
 
 ## Riesgos / Deuda Técnica Actual
 
@@ -275,6 +328,8 @@ El proyecto tiene una primera base funcional creada. El backend compila, pasa te
 - No hay modo offline.
 - No hay gestión de estado formal; si crece la UI, conviene introducir Riverpod.
 - El blueprint `render.yaml` contiene un dominio placeholder para CORS y debe ajustarse antes de usarlo en producción.
+- Flutter Web en Chrome/Chromium escritorio puede presentar problemas visuales con aceleración gráfica activada. Safari y móvil funcionan bien. Para Chrome, desactivar aceleración gráfica evita el problema observado.
+- La dirección visual retro arcade está en progreso y debe validarse en uso real antes de considerarla lista para una app pública.
 
 ## Regla De Trabajo
 
