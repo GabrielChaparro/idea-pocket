@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: ideapocket-api
+    name: farodeck-api
     runtime: docker
     rootDir: backend
     plan: free

@@ -1,8 +1,8 @@
-# IdeaPocket - Contexto Del Proyecto
+# Farodeck - Contexto Del Proyecto
 
 ## Objetivo
 
-IdeaPocket es una app personal para capturar ideas, pendientes, notas rápidas y tareas desde web y móvil. La prioridad inicial es tener una herramienta simple, rápida y usable, evitando sobreingeniería pero dejando una base razonable para crecer.
+Farodeck es una app personal para capturar ideas, pendientes, notas rápidas y tareas desde web y móvil. La prioridad inicial es tener una herramienta simple, rápida y usable, evitando sobreingeniería pero dejando una base razonable para crecer.
 
 ## Stack
 
@@ -58,6 +58,7 @@ IdeaPocket es una app personal para capturar ideas, pendientes, notas rápidas y
 ### Backend
 
 - Proyecto Spring Boot con Maven.
+- Marca pública actual: Farodeck.
 - Configuración PostgreSQL.
 - Migración inicial con tablas:
   - `users`
@@ -117,6 +118,7 @@ IdeaPocket es una app personal para capturar ideas, pendientes, notas rápidas y
 ### Flutter
 
 - Proyecto Flutter generado para Android, iOS y Web.
+- Nombre visible de la app actualizado a Farodeck en web, Android, iOS y UI Flutter.
 - Pantalla de login/registro.
 - Persistencia simple del token con `shared_preferences`.
 - Listado de items.
@@ -173,6 +175,7 @@ IdeaPocket es una app personal para capturar ideas, pendientes, notas rápidas y
   - control de orden reemplazado por botones tipo chip retro
   - botón Capturar reemplazado por botón arcade propio
   - logo generado descartado por ahora porque no encajaba y el nombre puede cambiar
+  - marca pública actualizada a Farodeck
 - Funciones recientes de producto en Flutter:
   - captura rápida tipo consola
   - parser simple para `tarea:`, `nota:`, `idea:`, `#tag`, `!alta`, `!media`, `!baja`, `hoy` y `mañana`
@@ -256,10 +259,10 @@ Resultado: correcto.
 Docker:
 
 ```bash
-docker build -t ideapocket-api ./backend
+docker build -t farodeck-api ./backend
 ```
 
-Resultado: correcto. Se generó la imagen local `ideapocket-api:latest`.
+Resultado: correcto. Se generó la imagen local `farodeck-api:latest`.
 
 ## Cómo Arrancar
 
@@ -303,6 +306,7 @@ flutter run -d chrome --web-port 3000 --dart-define=API_BASE_URL=https://idea-po
 - CORS en desarrollo permite `http://localhost:*` y `http://127.0.0.1:*` porque Flutter Web puede usar puertos dinámicos.
 - Para Netlify se recomienda compilar con `--pwa-strategy=none` para evitar cache/service worker agresivo mientras la app evoluciona rápido.
 - No se adoptó `--wasm` como solución: se probó, pero no resolvió el problema visual de Chrome escritorio. Mantener build web normal por ahora.
+- El nombre público es Farodeck; los paquetes Java `com.ideapocket` y la base de datos local `ideapocket` se mantienen por ahora para evitar un renombrado invasivo sin valor funcional inmediato.
 
 ## Dónde Me Quedo
 

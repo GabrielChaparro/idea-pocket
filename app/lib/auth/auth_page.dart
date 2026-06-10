@@ -75,7 +75,7 @@ class _AuthPageState extends State<AuthPage> {
                     border: Border.all(color: retroInk, width: 2),
                   ),
                   child: const Text(
-                    'IDEAPOCKET',
+                    'FARODECK',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 26,
@@ -88,7 +88,7 @@ class _AuthPageState extends State<AuthPage> {
                   shadow: false,
                   padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   child: Text(
-                    'POCKET OS // CAPTURE READY',
+                    'DECK OS // CAPTURE READY',
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
                   ),
                 ),

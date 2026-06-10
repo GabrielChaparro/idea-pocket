@@ -3,6 +3,5 @@ import 'package:flutter/material.dart';
 import 'app.dart';
 
 void main() {
-  runApp(const IdeaPocketApp());
+  runApp(const FarodeckApp());
 }
-

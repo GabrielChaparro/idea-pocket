@@ -35,7 +35,7 @@ class ApiIntegrationTest {
         mockMvc.perform(get("/api/health"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("UP"))
-            .andExpect(jsonPath("$.application").value("ideapocket-api"))
+            .andExpect(jsonPath("$.application").value("farodeck-api"))
             .andExpect(jsonPath("$.database").value("UP"))
             .andExpect(jsonPath("$.time").isString());
     }

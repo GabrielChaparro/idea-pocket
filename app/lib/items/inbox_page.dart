@@ -199,7 +199,7 @@ class _InboxPageState extends State<InboxPage> {
     final wide = MediaQuery.sizeOf(context).width >= 800;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('IDEAPOCKET'),
+        title: const Text('FARODECK'),
         actions: [
           IconButton(
             onPressed: load,
@@ -669,7 +669,7 @@ class _ArcadeMarquee extends StatelessWidget {
           SizedBox(width: 8),
           Expanded(
             child: Text(
-              'IDEAPOCKET // ARCADE CAPTURE DECK',
+              'FARODECK // ARCADE CAPTURE DECK',
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: Colors.white,

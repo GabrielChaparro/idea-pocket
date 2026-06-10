@@ -1,4 +1,4 @@
-# IdeaPocket
+# Farodeck
 
 Personal inbox for quick ideas, notes, and tasks.
 
@@ -104,7 +104,7 @@ Example response:
 ```json
 {
   "status": "UP",
-  "application": "ideapocket-api",
+  "application": "farodeck-api",
   "database": "UP",
   "time": "2026-06-02T10:00:00Z"
 }
@@ -129,7 +129,7 @@ mvn package
 Backend Docker image:
 
 ```bash
-docker build -t ideapocket-api ./backend
+docker build -t farodeck-api ./backend
 ```
 
 Run backend container against local PostgreSQL:
@@ -141,7 +141,7 @@ docker run --rm -p 8080:8080 \
   -e DATABASE_PASSWORD=ideapocket \
   -e JWT_SECRET=replace-with-a-strong-secret-of-at-least-32-characters \
   -e CORS_ALLOWED_ORIGIN_PATTERNS=http://localhost:*,http://127.0.0.1:* \
-  ideapocket-api
+  farodeck-api
 ```
 
 ## Deployment

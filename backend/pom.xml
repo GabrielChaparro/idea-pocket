@@ -11,9 +11,9 @@
     </parent>
 
     <groupId>com.ideapocket</groupId>
-    <artifactId>ideapocket-api</artifactId>
+    <artifactId>farodeck-api</artifactId>
     <version>0.1.0</version>
-    <name>IdeaPocket API</name>
+    <name>Farodeck API</name>
 
     <properties>
         <java.version>21</java.version>

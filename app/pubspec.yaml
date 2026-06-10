@@ -1,5 +1,5 @@
-name: ideapocket_app
-description: "IdeaPocket personal idea and task inbox."
+name: farodeck_app
+description: "Farodeck personal idea and task inbox."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
